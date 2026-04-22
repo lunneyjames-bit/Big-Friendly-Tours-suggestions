@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oxford Recommendations — Big Friendly Tours</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&amp;family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600&amp;family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,300;1,9..144,600&amp;display=swap" rel="stylesheet">
+<style>
+:root{
+  --sun:#FFD23F; --sky:#3BCEAC; --coral:#FF6B6B;
+  --navy:#1B2A4A; --ink:#162033; --cloud:#FFF9EF;
+  --sand:#FFF0CC; --lavender:#C9B8FF; --mint:#D4F5ED;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Nunito',sans-serif;
+  background:var(--cloud);
+  color:var(--ink);
+  overflow-x:hidden;
+  min-height:100vh;
+}
+
+/* ─── EDITOR BAR ─────────────────────── */
+#editor-bar{
+  position:fixed;top:0;left:0;right:0;z-index:9999;
+  background:#162033;color:#fff;
+  display:flex;align-items:center;gap:10px;
+  padding:0 16px;height:46px;
+  font-family:system-ui,sans-serif;font-size:13px;
+  box-shadow:0 2px 12px rgba(0,0,0,0.4);
+}
+#editor-bar .bar-title{font-weight:800;color:#FFD23F;margin-right:6px;letter-spacing:.04em}
+#editor-bar button{
+  background:rgba(255,255,255,0.12);border:1.5px solid rgba(255,255,255,0.2);
+  color:#fff;padding:5px 13px;border-radius:20px;cursor:pointer;font-size:12px;
+  font-family:system-ui,sans-serif;font-weight:600;transition:all .15s;
+}
+#editor-bar button:hover{background:rgba(255,255,255,0.25)}
+#editor-bar button.active{background:#FFD23F;color:#162033;border-color:#FFD23F}
+#editor-bar .save-btn{background:#3BCEAC;color:#162033;font-weight:800;border-color:#3BCEAC;margin-left:auto}
+#editor-bar .save-btn:hover{background:#4de0bc}
+#editor-bar .hint{font-size:11px;color:rgba(255,255,255,0.5)}
+
+body.editing-mode{padding-top:46px}
+body.editing-mode nav{top:46px}
+
+body.editing-mode [data-editable]{
+  outline:2px dashed transparent;border-radius:4px;
+  transition:outline .15s,background .15s;cursor:text;
+}
+body.editing-mode [data-editable]:hover{
+  outline:2px dashed var(--sun);background:rgba(255,210,63,0.12);
+}
+body.editing-mode [data-editable]:focus{
+  outline:2px solid var(--sky);background:rgba(59,206,172,0.1);
+}
+
+/* ─── NAV ────────────────────────────── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  background:var(--navy);
+  padding:0 2rem;
+  display:flex;align-items:center;justify-content:space-between;
+  height:64px;
+  border-bottom:3px solid var(--sun);
+}
+.nav-logo{
+  font-family:'Fredoka One',cursive;
+  font-size:1.5rem;color:var(--sun);
+  text-decoration:none;letter-spacing:.02em;
+  display:flex;align-items:center;gap:8px;
+}
+.back-link{
+  font-family:'Nunito',sans-serif;font-weight:700;font-size:.9rem;
+  color:rgba(255,249,239,0.85);text-decoration:none;
+  display:flex;align-items:center;gap:.4rem;
+  transition:color .2s;
+}
+.back-link:hover{color:var(--sun)}
+
+/* ─── PAGE HEADER ────────────────────── */
+.page-header{
+  margin-top:64px;
+  background:var(--navy);
+  padding:4rem 2rem 5rem;
+  text-align:center;
+  position:relative;overflow:hidden;
+}
+.page-header::before{
+  content:'';position:absolute;
+  width:600px;height:600px;
+  background:radial-gradient(circle,rgba(255,210,63,0.15) 0%,transparent 70%);
+  top:-200px;right:-100px;pointer-events:none;
+}
+.page-header::after{
+  content:'';position:absolute;
+  width:400px;height:400px;
+  background:radial-gradient(circle,rgba(59,206,172,0.12) 0%,transparent 70%);
+  bottom:-100px;left:-50px;pointer-events:none;
+}
+.page-header-inner{position:relative;z-index:2}
+.page-tag{
+  display:inline-block;
+  background:var(--sun);color:var(--ink);
+  font-family:'Fredoka One',cursive;font-size:.9rem;
+  padding:.3rem 1rem;border-radius:20px;
+  margin-bottom:1rem;
+  border:2px solid var(--ink);box-shadow:2px 2px 0 var(--ink);
+  transform:rotate(-1deg);display:inline-block;
+}
+.page-title{
+  font-family:'Fredoka One',cursive;
+  font-size:clamp(2.5rem,6vw,4.5rem);
+  color:#fff;line-height:1.1;margin-bottom:1rem;
+}
+.page-title .accent{color:var(--sun)}
+.page-subtitle{
+  font-family:'Fraunces',serif;font-style:italic;font-weight:300;
+  font-size:clamp(1rem,2vw,1.3rem);
+  color:rgba(255,249,239,.75);
+  max-width:580px;margin:0 auto;line-height:1.6;
+}
+
+/* wave */
+.wave-divider{display:block;width:100%;overflow:hidden;line-height:0;margin-top:-2px}
+.wave-divider svg{display:block;width:100%;height:60px}
+
+/* ─── CONTENT AREA ───────────────────── */
+.content-area{
+  max-width:860px;margin:0 auto;
+  padding:4rem 2rem 6rem;
+}
+
+/* Recommendation blocks — user fills these in */
+.rec-block{
+  background:#fff;
+  border:3px solid var(--ink);
+  border-radius:20px;
+  padding:2rem 2.2rem;
+  box-shadow:5px 5px 0 var(--ink);
+  margin-bottom:2rem;
+  transition:transform .2s,box-shadow .2s;
+}
+.rec-block:hover{transform:translate(-2px,-2px);box-shadow:7px 7px 0 var(--ink)}
+.rec-block-header{
+  display:flex;align-items:center;gap:.8rem;
+  margin-bottom:1rem;
+  padding-bottom:1rem;
+  border-bottom:2px dashed var(--light-brown, #d4c5b0);
+}
+.rec-emoji{font-size:2rem;line-height:1}
+.rec-title{
+  font-family:'Fredoka One',cursive;
+  font-size:1.4rem;color:var(--navy);
+}
+.rec-subtitle{
+  font-size:.9rem;color:#888;font-weight:600;
+  text-transform:uppercase;letter-spacing:.06em;
+}
+.rec-body{
+  font-size:1.05rem;color:#3a4a65;
+  line-height:1.8;
+  min-height:60px;
+}
+
+/* accent colours per block */
+.rec-block:nth-child(1){border-top:6px solid var(--coral)}
+.rec-block:nth-child(2){border-top:6px solid var(--sky)}
+.rec-block:nth-child(3){border-top:6px solid var(--sun)}
+.rec-block:nth-child(4){border-top:6px solid var(--lavender)}
+.rec-block:nth-child(5){border-top:6px solid var(--coral)}
+.rec-block:nth-child(6){border-top:6px solid var(--sky)}
+
+/* add block button (only in edit mode) */
+#add-block-btn{
+  display:none;
+  width:100%;
+  background:transparent;
+  border:3px dashed var(--sky);
+  border-radius:20px;
+  padding:1.5rem;
+  font-family:'Fredoka One',cursive;
+  font-size:1.1rem;color:var(--sky);
+  cursor:pointer;text-align:center;
+  transition:background .2s,color .2s;
+  margin-bottom:2rem;
+}
+#add-block-btn:hover{background:rgba(59,206,172,0.1)}
+body.editing-mode #add-block-btn{display:block}
+
+/* ─── FOOTER ─────────────────────────── */
+footer{
+  background:var(--ink);color:rgba(255,249,239,.5);
+  text-align:center;padding:2.5rem 2rem;font-size:.9rem;
+}
+footer a{color:var(--sun);text-decoration:none}
+.footer-logo{
+  font-family:'Fredoka One',cursive;
+  font-size:1.5rem;color:var(--sun);
+  display:block;margin-bottom:.6rem;
+}
+</style>
+</head>
+<body class="">
+
+<!-- ═══ EDITOR TOOLBAR ═══════════════════════════════════ -->
+
+
+<!-- ═══ NAV ═════════════════════════════════════════════ -->
+<nav style="box-shadow: rgba(0, 0, 0, 0.2) 0px 4px 20px;">
+  <a href="big-friendly-tours.html" class="nav-logo">
+    <span>🚶</span> Big Friendly Tours
+  </a>
+  <a href="big-friendly-tours.html" class="back-link">← Back to main site</a>
+</nav>
+
+<!-- ═══ PAGE HEADER ══════════════════════════════════════ -->
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="page-tag">📍 From our guides</div>
+    <h1 class="page-title">Oxford <span class="accent">Recommendations</span></h1>
+    <p class="page-subtitle">Our favourite spots in the city — the pubs, cafés, restaurants and hidden gems we actually go to ourselves.</p>
+  </div>
+</div>
+<div class="wave-divider" style="background:var(--navy)">
+  <svg viewBox="0 0 1200 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,30 C200,60 400,0 600,30 C800,60 1000,0 1200,30 L1200,60 L0,60 Z" fill="#FFF9EF"></path>
+  </svg>
+</div>
+
+<!-- ═══ CONTENT ═══════════════════════════════════════════ -->
+<div class="content-area" id="rec-list">
+
+  <div class="rec-block">
+    <div class="rec-block-header">
+      <span class="rec-emoji">🍺</span>
+      <div>
+        <div class="rec-title">Your favourite pub</div>
+        <div class="rec-subtitle">Pubs &amp; Drinks</div>
+      </div>
+    </div>
+    <div class="rec-body"><span id="docs-internal-guid-02251c30-7fff-6443-b306-20d2d1a7f31d"><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">Oxford has some of the best pubs in the UK, If you are ever unsure as to how to find a good pub, definitely pick up a copy of the “CAMRA good beer guide”, whilst not exhaustive they wont ever suggest a bad pub!&nbsp;</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">At time of writing the average price for a cask pint in Oxford is around £5. Expect to pay more for Guinness, though honestly Oxford pubs provide a vast range of stouts at much lower prices with far smaller marketing budgets!&nbsp;</span></p><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">Queue along the bar, it's not a coffee shop!&nbsp;</span></p><br><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">The Royal Blenheim. Victor in Oxfords pub of the year 4 out of the last 5 years (one year it came second by 1 vote!) . No food beyond snacks but a fantastic beer selection, Steve the landlord does a great quiz and always ensures the rugby is on. Usually the only place in Oxford that will show American sport (NHL, NFL) if a game is on. Sadly no outdoor space</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">The Lamb and Flag: Again not really any food but a large range of beer, all the profits go to fund Phds at St Johns. Former haunt of the inklings (Including Tolkien) Over the road is the construction site that will reopen as the Eagle and Child eventually.&nbsp;</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">The White Horse: Right next to Blackwells, not a huge range of beer but usually all local choices at good prices. The pubs walls are covered in pictures of actors who filmed in Oxford. Lots of outside space in the summer</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">The Bear: Expensive for oxford but lovely ancient interior with&nbsp; ceiling lined with ties in glass cabinets collected by the old landlord over many years . Does good food , limited indoor seating ,lots outside</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">The Gardners Arms: A vegetarian pub! Yes you heard that right, if meat isnt your thing they have a decent range of beer and lovely garden with an entirely vegetarian menu. Slightly outside Oxford centre near the Jericho area.</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">The White Rabbit: This former heavy metal pub (no really) is one of Oxford's best and cheapest for beer, limited indoor space but a big outdoor seating area. Fantastic pizza.&nbsp;</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">The Magdalen Arms: If it's a very nice sunday roast you want this is where you go, it's not cheap and about a 30 minutes walk from the town centre (or just get the bus) book ahead.&nbsp;</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">The Chester Arms: In a similar area to the Magdalen arms, again famous for its roasts except that you cant reserve, in true millennial style you have to get there early and queue. Its worth it though!&nbsp;</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 700; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">Breweries:</span></p><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">A little different but the Covered market has two taproom for oxfordshire breweries :&nbsp;&nbsp;</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">Teardrop: Tiny space inside the market right next to Sartorellis pizza (also excellent) The beer comes from two breweries 15 minutes outside Oxford on the edge of the Cotswolds&nbsp;</span></p><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><a href="https://www.churchhanbrewery.com/" style="text-decoration-line: none;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(17, 85, 204); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; text-decoration-line: underline; text-decoration-skip-ink: none; vertical-align: baseline; white-space-collapse: preserve;">https://www.churchhanbrewery.com/</span></a></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">The Market Tap: Another social enterprise retraining prisoners, this time in brewing and baking. Great beer though, expect higher prices than most pubs&nbsp;</span></p><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">https://www.tapsocialmovement.com/</span></p><div><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;"><br></span></div></span></div>
+  </div>
+
+  <div class="rec-block">
+    <div class="rec-block-header">
+      <span class="rec-emoji">☕</span>
+      <div>
+        <div class="rec-title">Best coffee spot</div>
+        <div class="rec-subtitle">Cafés &amp; Coffee</div>
+      </div>
+    </div>
+    <div class="rec-body"><span id="docs-internal-guid-6c5e4016-7fff-301c-7287-236b203e98cd"><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">&nbsp;Newground: Locally roasted just outside oxford , it looks a little odd from the outside but the coffee here is great, not only that but this is a social enterprise helping to train and educate offenders in side and outside prison to give them life skills and stop them ever going back to prison!&nbsp;</span></p><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">Where: Ship street, right where we start the tour</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">Hamblin: Only open Thursday to Sunday, the best Cinnamon buns outside Stockholm&nbsp;</span></p><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">Where :covered market&nbsp;</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">Columbia coffee roasters: Lovely coffee and sandwiches ,&nbsp;</span></p><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">where: covered market&nbsp;</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">Missing Bean: a Local chain seemingly popping up all over the county now, one of Oxfords original modern coffee shops</span></p><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">Where: Turl street is the original location but there's a few all around now.</span></p><div><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;"><br></span></div></span></div>
+  </div>
+
+  <div class="rec-block">
+    <div class="rec-block-header">
+      <span class="rec-emoji">🍕</span>
+      <div>
+        <div class="rec-title">Favourite restaurant</div>
+        <div class="rec-subtitle">Food &amp; Eating</div>
+      </div>
+    </div>
+    <div class="rec-body"><span id="docs-internal-guid-ab3b12bf-7fff-cdc9-2265-821380975c0e"><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">Due to the high student population central Oxford doesn't have many restaurants for&nbsp; city its size, most cater for students or office workers at lunchtime , your best bet is usually a pub (see ones above) Gloucester Green Market or a sandwich shop:</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">Sartorellis: Inside the covered market this place does amazing pizza, be warned it shuts early.</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">Lulas Ethiopian: again inside the covered market, same early closing issue.</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">Browns: The classic Oxford breakfast spot doing a typical fried breakfast, inside the covered market.&nbsp;</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">Najars: A student institution, falafel, kebab and halal wraps, usually a big queue in term time though very reasonable prices&nbsp;</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">Gloucester Green food market (TOP PICK): Open Wednesday to Saturday , street food from all around the world , our favourites would be Mukja (Korean) Gyoza Oxford (usually has the biggest queue) and Sasha dumplings but expect to find everything from cake to curry and Cantonese.&nbsp; If you have cash many traders will give you a discount or extra food !&nbsp;</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">The Trout: Whilst this is technically a pub its more of a food destination. A nice walk across Port Meadow in the summer takes you here, probably best to avoid if its wet out!</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">Harrisons Fish and Chips: Nationally nominated for many, many awards, sadly its not in the centre of Oxford so is a bit of a trek to get to. Like all Fish and chip shops dont go on a monday, the fish wont be fresh!&nbsp;</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">Chains:&nbsp;</span></p><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">Dishoom Permit room: Its the same as the others around the country but does great curry with decent service</span></p><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">Mowgli: Similar to Dishoom though more based around street food, on top of the Westgate shopping centre with an oddly great view</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">Fancier options:</span></p><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">No 1 ship street: Actually centrally located, right by our meeting point!</span></p><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">The Cherwell Boathouse: Out of the centre of the city , the best place to hire a punt in the summer</span></p><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">Gees: 30 minutes walk from the centre of Oxford, classic place for anniversaries etc. </span></p><div><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;"><br></span></div></span></div>
+  </div>
+
+  <div class="rec-block">
+    <div class="rec-block-header">
+      <span class="rec-emoji">🏛️</span>
+      <div>
+        <div class="rec-title">Museums and exhibits</div>
+        <div class="rec-subtitle">Sights &amp; Spots</div>
+      </div>
+    </div>
+    <div class="rec-body"><span id="docs-internal-guid-536ba28d-7fff-86d8-2aa3-094e5aef7496"><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">The Pitt Rivers and Oxford Natural History Museum. Free Entry</span></p><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">These two share a building, architecturally stunning; the NHM is much like other natural history museums, dinosaurs and stuffed animals. However if you go through to the back you enter the Pitt Rivers, possibly one of the most varied and interesting anthropology museums in the world.&nbsp;</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">The Ashmolean, Free entry: If ancient mediterranean cultures are your thing this central Oxford museum has plenty of Roman, Greek and Minoan items. Not very child friendly but has a really good cafe on its roof and cheap luggage storage downstairs .</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">This History of Science Museum, Free entry: On the smaller side but centrally located , worth entering just to see the one blackboard Einstein wrote on on his trip to Oxford.&nbsp;</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 700; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">Other:</span></p><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">The Bodlein Library. If you like books, ancient fantasy, modern fantasy (really any fantasy) or Harry potter then here's where to go. Most tickets are sold as first come first served on the day only. We would suggest the 30 minute tour of the divinity school and Duke Humphries Library , if you can get on the hour-long one that also takes you inside the Radcliffe camera. The western Library also has free wifi, toilets and a rotating free exhibit (can be anything from the books fo John Le Carre to all of the universities most precious books)</span></p><br></span></div>
+  </div>
+
+  <div class="rec-block">
+    <div class="rec-block-header">
+      <span class="rec-emoji">🛍️</span>
+      <div>
+        <div class="rec-title">Local Shopping</div>
+        <div class="rec-subtitle">Shopping</div>
+      </div>
+    </div>
+    <div class="rec-body">Write your recommendation here — independent shops, bookshops, markets, anything!</div>
+  </div>
+
+  <div class="rec-block">
+    <div class="rec-block-header">
+      <span class="rec-emoji">🌳</span>
+      <div>
+        <div class="rec-title">Best outdoor spot</div>
+        <div class="rec-subtitle">Parks &amp; Nature</div>
+      </div>
+    </div>
+    <div class="rec-body">Write your recommendation here — parks, riverside walks, meadows, punting spots!</div>
+  </div>
+
+  <div class="rec-block">
+    <div class="rec-block-header">
+      <span class="rec-emoji">🚻</span>
+      <div>
+        <div class="rec-title">Public toilets</div>
+        <div class="rec-subtitle">Essential Info</div>
+      </div>
+    </div>
+    <div class="rec-body">Write your recommendation here — where to find the best (and free!) public toilets in Oxford.</div>
+  </div>
+
+  <div class="rec-block"><div class="rec-block-header"><span class="rec-emoji">✏️</span><div><div class="rec-title">Colleges and Harry Potter filming sites&nbsp;</div><div class="rec-subtitle">Category</div></div></div><div class="rec-body"><span id="docs-internal-guid-8602d7d3-7fff-1e94-22a1-c9d7f2bcc381"><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">Many Oxford Colleges are notorious for not being that welcoming, either never being open or charging very high fees. We have listed the ones to best see Harry potter locations (for a fee) and the two that are routinely open to the public. However, should you be thinking of applying for Oxford, all the colleges will let you in for free, so if you can borrow a teenager, bring them along! University open days are also good times to get a good look around (usually in September and&nbsp; end of June)&nbsp;</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">St Johns: Free entry from 1-4pm unless closed for special events or National Holidays</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">All Souls: Free Sunday to Friday 1-4pm , no large groups.&nbsp;</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">New College and Christ Church: The Harry Potter filming locations!&nbsp;</span></p><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">&nbsp;</span></p><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">If we were to pick one then New college is a bit cheaper and you get to see the cloisters and garden , Oxford's preserved city walls and the Chapel. Christ Church has the Cathedral so you can always see this section free by going to a service.&nbsp; Its worth walking down to Christ Church even without a ticket as the area its in is stunning and has lots of open space for picnics. </span></p><div><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;"><br></span></div></span></div></div><div class="rec-block"><div class="rec-block-header"><span class="rec-emoji">✏️</span><div><div class="rec-title">Other parts of the county</div><div class="rec-subtitle">Theres more to oxfordshire than oxford!</div></div></div><div class="rec-body"><span id="docs-internal-guid-ab88d176-7fff-7f2e-b33c-3793fd480df1"><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">The Rollwright stones: Yes we have our own Stone circle, can be quite muddy, free entry, except the odd confused druid.</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">Hook Norton Brewery:&nbsp; Over 170 years old, nestled out of the way in the Cotswolds and still delivering beer by horse and cart!&nbsp;</span></p><br><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size: 11pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; white-space-collapse: preserve;">Blenheim Palace: Churchill's birthplace and one of the finest non Royal palaces in Europe. Half the grounds are free entry but to be close to the palace you do have to pay. Easy to get to on the bus from Oxford&nbsp;</span></p><br></span></div></div><button id="add-block-btn" style="display: none;">+ Add another recommendation</button>
+
+</div>
+
+<!-- ═══ FOOTER ════════════════════════════════════════════ -->
+<footer>
+  <span class="footer-logo">🚶 Big Friendly Tours</span>
+  <p><a href="big-friendly-tours.html">← Back to main site</a></p>
+  <p style="margin-top:.5rem;font-size:.8rem">© 2025 Big Friendly Tours. All rights reserved.</p>
+</footer>
+
+<script>
+(function(){
+  var editMode = false;
+
+  function toggleEditMode(){
+    editMode = !editMode;
+    document.body.classList.toggle('editing-mode', editMode);
+    var btn = document.getElementById('btn-edit');
+    var hint = document.getElementById('edit-hint');
+    if(editMode){
+      btn.textContent = '✓ Editing ON';
+      btn.classList.add('active');
+      hint.textContent = 'Click any text to edit it';
+      document.querySelectorAll('[data-editable]').forEach(function(el){ el.setAttribute('contenteditable','true'); });
+    } else {
+      btn.textContent = 'Enable Editing';
+      btn.classList.remove('active');
+      hint.textContent = '';
+      document.querySelectorAll('[data-editable]').forEach(function(el){ el.setAttribute('contenteditable','false'); });
+    }
+  }
+
+  function addBlock(){
+    var block = document.createElement('div');
+    block.className = 'rec-block';
+    block.innerHTML =
+      '<div class="rec-block-header">' +
+        '<span class="rec-emoji" data-editable contenteditable="true">✏️</span>' +
+        '<div>' +
+          '<div class="rec-title" data-editable contenteditable="true">New recommendation</div>' +
+          '<div class="rec-subtitle" data-editable contenteditable="true">Category</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="rec-body" data-editable contenteditable="true">Write your recommendation here!</div>';
+    var addBtn = document.getElementById('add-block-btn');
+    document.getElementById('rec-list').insertBefore(block, addBtn);
+  }
+
+  function saveHTML(){
+    var wasEditing = editMode;
+    if(wasEditing) toggleEditMode();
+    var clone = document.documentElement.cloneNode(true);
+    var bar = clone.querySelector('#editor-bar'); if(bar) bar.remove();
+    clone.querySelectorAll('[contenteditable]').forEach(function(el){ el.removeAttribute('contenteditable'); });
+    clone.querySelectorAll('[data-editable]').forEach(function(el){ el.removeAttribute('data-editable'); });
+    clone.querySelector('body').classList.remove('editing-mode');
+    // hide add button in saved version
+    var addBtn = clone.querySelector('#add-block-btn'); if(addBtn) addBtn.style.display='none';
+    var html = '<!DOCTYPE html>\n' + clone.outerHTML;
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([html],{type:'text/html'}));
+    a.download = 'oxford-recommendations.html';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    if(wasEditing) toggleEditMode();
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    document.getElementById('btn-edit').addEventListener('click', toggleEditMode);
+    document.getElementById('btn-save').addEventListener('click', saveHTML);
+    document.getElementById('add-block-btn').addEventListener('click', addBlock);
+
+    window.addEventListener('scroll', function(){
+      document.querySelector('nav').style.boxShadow =
+        window.scrollY > 20 ? '0 4px 20px rgba(0,0,0,0.2)' : 'none';
+    });
+  });
+})();
+</script>
+
+
+</body></html>
